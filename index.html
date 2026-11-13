@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SV Detailing | Productos de car detailing en La Rioja</title>
+  <meta name="description" content="Productos profesionales de car detailing de las mejores marcas. Pedidos por WhatsApp. La Rioja, Argentina.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="img/logo/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-pagina="inicio">
+  <header id="encabezado" class="encabezado"></header>
+  <section id="banner" class="banner" aria-label="Banner"></section>
+
+  <section class="franja" aria-label="Marcas">
+    <button type="button" class="flecha flecha--izq" id="franja-anterior" aria-label="Ver marcas anteriores" hidden>‹</button>
+    <div id="franja-marcas" class="franja__pista"></div>
+    <button type="button" class="flecha flecha--der" id="franja-siguiente" aria-label="Ver más marcas" hidden>›</button>
+  </section>
+
+  <main class="zona-oscura">
+    <div class="contenedor">
+      <div class="destacados__cabecera">
+        <h2 class="titulo-oscuro">Productos Destacados</h2>
+        <a href="catalogo.html" class="ver-todo">Ver catálogo <span aria-hidden="true">›</span></a>
+      </div>
+      <div id="destacados" class="destacados" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <footer id="pie" class="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/datos-ejemplo.js"></script>
+  <script src="js/tienda.js"></script>
+  <script src="js/inicio.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo | SV Detailing</title>
+  <meta name="description" content="Todos los productos de car detailing de SV Detailing en un solo lugar.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="img/logo/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Michroma&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body data-pagina="catalogo">
+  <header id="encabezado" class="encabezado"></header>
+  <section id="banner" class="banner" aria-label="Banner"></section>
+
+  <main class="zona-clara">
+    <div class="contenedor">
+      <nav class="miga" aria-label="Ubicación">
+        <a href="index.html">Inicio</a><span class="miga__sep">›</span><span id="miga-actual"></span>
+      </nav>
+      <div class="listado">
+        <aside id="lateral" class="lateral" aria-label="Filtros"></aside>
+        <section class="listado__principal">
+          <div class="listado__barra">
+            <div>
+              <h1 id="titulo-listado" class="titulo-seccion">Todos los productos</h1>
+              <span id="cantidad-listado" class="listado__cantidad"></span>
+            </div>
+            <div class="listado__controles">
+              <label class="orden">Ordenar por:
+                <select id="orden">
+                  <option value="relevantes">Más relevantes</option>
+                  <option value="precio-asc">Menor precio</option>
+                  <option value="precio-desc">Mayor precio</option>
+                  <option value="nombre">Nombre (A-Z)</option>
+                </select>
+              </label>
+              <div class="vista" role="group" aria-label="Tipo de vista">
+                <button type="button" class="vista__btn" data-vista="grilla" aria-label="Ver en cuadrícula">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </button>
+                <button type="button" class="vista__btn" data-vista="lista" aria-label="Ver en lista">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="4" cy="18" r="1.3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="logos-marcas" class="logos"></div>
+          <div id="grilla" class="grilla" aria-live="polite"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer id="pie" class="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/datos-ejemplo.js"></script>
+  <script src="js/tienda.js"></script>
+  <script src="js/listado.js"></script>
+</body>
+</html>
