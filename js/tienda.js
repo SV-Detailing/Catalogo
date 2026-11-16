@@ -182,8 +182,13 @@ const SV = (() => {
     img.replaceWith(temp.firstElementChild);
   }
 
-  const fotoProducto = (p, clase = 'tarjeta__foto') =>
-    imgHTML(variantes('img/productos/', p.foto || slug(p.codigo) + '.webp'), p.nombre, clase);
+  // Primero busca la foto con el nombre del código (ej: 7839709163425.webp);
+  // si no existe, usa el nombre de la columna FOTO del Sheet.
+  const fotoProducto = (p, clase = 'tarjeta__foto') => {
+    const porCodigo = 'img/productos/' + slug(p.codigo) + '.webp';
+    const lista = [porCodigo, ...variantes('img/productos/', p.foto).filter(u => u !== porCodigo)];
+    return imgHTML(lista, p.nombre, clase);
+  };
 
   const logoMarca = (m, fondo, clase = 'marca-logo') =>
     imgHTML(variantes(`img/marcas/${fondo}/`, m.logo || slug(m.nombre) + '.svg'), m.nombre, clase, m.nombre);
