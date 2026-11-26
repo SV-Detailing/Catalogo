@@ -36,3 +36,15 @@ Los cambios del Sheet tardan unos minutos en verse (Google y la página guardan 
 
 ## Probar en la PC
 Abrí `index.html` con la extensión **Live Server** de VS Code (clic derecho → *Open with Live Server*).
+
+## Kits y combos
+
+- Un kit es una fila de CATALOGO con `SECCION = KIT`.
+- Si la columna **P (INCLUYE)** tiene contenido, al tocar la tarjeta se abre la vista de detalle con un carrusel.
+  - Primera foto: la del combo.
+  - Después, una foto por cada producto que incluye.
+- Formato de INCLUYE: códigos del catálogo separados por `;`, por ejemplo `TS 6792031 DF; TS 8853691 MG`.
+  - Para más de una unidad: `2x CODIGO`.
+  - Algo que no está en el catálogo se escribe como texto, por ejemplo `Aplicador de Espuma Alta Densidad`. Su foto se busca como `img/productos/aplicador-de-espuma-alta-densidad.webp`.
+- El stock del kit sale de sus productos: si alguno está SIN STOCK, el kit también.
+- Link directo a un combo: `catalogo.html?kit=CODIGO`.

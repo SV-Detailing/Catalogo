@@ -86,8 +86,39 @@ const SV = (() => {
       estado: normalizarEstado(f.ESTADO),
       destacado: (f.DESTACADO || '').toUpperCase() === 'SI',
       foto: f.FOTO || '',
-      orden: f.ORDEN === '' || f.ORDEN == null ? 9999 : aNumero(f.ORDEN)
+      orden: f.ORDEN === '' || f.ORDEN == null ? 9999 : aNumero(f.ORDEN),
+      incluyeTexto: f.INCLUYE || '',
+      items: []
     };
+  }
+
+  /* Kits y combos: la columna INCLUYE lista lo que trae, separado por ";".
+     Cada parte es un código del catálogo (ej: TS 6792031 DF) o un texto libre
+     (ej: Aplicador de Espuma Alta Densidad). Se puede indicar cantidad: 2x CODIGO */
+  const claveCodigo = c => String(c || '').replace(/\s+/g, '').toUpperCase();
+  const PESO_ESTADO = { 'DISPONIBLE': 0, 'ÚLTIMAS UNIDADES': 1, 'SIN STOCK': 2 };
+
+  function armarKits(productos) {
+    const porCodigo = new Map(productos.map(p => [claveCodigo(p.codigo), p]));
+    productos.forEach(k => {
+      if (!k.incluyeTexto) return;
+      k.items = k.incluyeTexto.split(/[;\n]+/).map(t => t.trim()).filter(Boolean).map(t => {
+        const m = t.match(/^(\d+)\s*[xX×]\s+(.+)$/);
+        const cantidad = m ? parseInt(m[1], 10) : 1;
+        const texto = m ? m[2].trim() : t;
+        return { cantidad, texto, producto: porCodigo.get(claveCodigo(texto)) || null };
+      });
+      // El estado del kit sale de sus productos: si falta uno, el kit no está disponible
+      const conocidos = k.items.filter(i => i.producto);
+      if (conocidos.length) {
+        k.estado = conocidos.map(i => i.producto.estado)
+          .reduce((a, b) => (PESO_ESTADO[b] > PESO_ESTADO[a] ? b : a), 'DISPONIBLE');
+      }
+      // Precio comprando por separado (solo si todos los productos están en el catálogo)
+      k.precioSeparado = k.items.every(i => i.producto)
+        ? k.items.reduce((s, i) => s + i.producto.precio * i.cantidad, 0) : 0;
+    });
+    return productos;
   }
 
   function armarMarca(f) {
@@ -130,9 +161,9 @@ const SV = (() => {
         traerCSV(CONFIG.URL_MARCAS, EJEMPLO_MARCAS, 'sv-mar').catch(() => leerCSV(EJEMPLO_MARCAS))
       ]).then(([cat, mar]) => {
         if (!CONFIG.URL_CATALOGO) console.info('SV Detailing: usando datos de ejemplo (CONFIG.URL_CATALOGO está vacío).');
-        const productos = cat.map(armarProducto)
-          .filter(p => p.codigo && p.visible)
-          .sort((a, b) => a.orden - b.orden);
+        const todos = cat.map(armarProducto).filter(p => p.codigo);
+        armarKits(todos);   // los kits pueden incluir productos ocultos
+        const productos = todos.filter(p => p.visible).sort((a, b) => a.orden - b.orden);
         const marcas = mar.map(armarMarca)
           .filter(m => m.nombre && m.visible)
           .sort((a, b) => a.orden - b.orden);
@@ -358,14 +389,21 @@ const SV = (() => {
     </button>`;
   }
 
-  const textoDescripcion = p => [p.descripcion, p.presentacion].filter(Boolean).join(' · ');
+  const esKit = p => p.items && p.items.length > 0;
+  const unidadesKit = p => p.items.reduce((s, i) => s + i.cantidad, 0);
+  const textoDescripcion = p => esKit(p)
+    ? `Incluye ${unidadesKit(p)} productos`
+    : [p.descripcion, p.presentacion].filter(Boolean).join(' · ');
 
   // variante: 'h' (foto a la izquierda), 'v' (foto arriba), 'oscura' (destacados del inicio), 'mini' (sugerencias)
   function tarjetaHTML(p, variante = 'v') {
     const etiquetaPromo = p.precioAnterior
       ? `<span class="tarjeta__promo">-${Math.round((1 - p.precio / p.precioAnterior) * 100)}%</span>` : '';
-    return `<article class="tarjeta tarjeta--${variante} ${p.estado === 'SIN STOCK' ? 'tarjeta--agotada' : ''}">
-      <div class="tarjeta__media">${etiquetaPromo}${fotoProducto(p)}</div>
+    const kit = esKit(p);
+    const atributosKit = kit
+      ? ` data-kit="${esc(p.codigo)}" tabindex="0" role="button" aria-label="Ver detalle de ${esc(p.nombre)}"` : '';
+    return `<article class="tarjeta tarjeta--${variante} ${p.estado === 'SIN STOCK' ? 'tarjeta--agotada' : ''} ${kit ? 'tarjeta--kit' : ''}"${atributosKit}>
+      <div class="tarjeta__media">${etiquetaPromo}${fotoProducto(p)}${kit ? '<span class="tarjeta__ver">Ver combo</span>' : ''}</div>
       <div class="tarjeta__info">
         ${marcaVisible(p.marca) ? `<span class="tarjeta__marca">${esc(p.marca)}</span>` : ''}
         <h3 class="tarjeta__nombre">${esc(p.nombre)}</h3>
@@ -392,6 +430,143 @@ const SV = (() => {
     setTimeout(() => b.classList.remove('boton--ok'), 700);
   });
 
+  /* ---------------- DETALLE DE KIT / COMBO ----------------
+     Al tocar la tarjeta de un kit se abre una vista con un carrusel:
+     primero la foto del combo y después cada producto que incluye. */
+
+  const nombreItem = i => i.producto
+    ? [i.producto.nombre, /^(1\s*(unidad|kit|set|combo)|x1)$/i.test(i.producto.presentacion) ? '' : i.producto.presentacion]
+        .filter(Boolean).join(' ')
+    : i.texto;
+
+  function fotoItem(i, clase) {
+    if (i.producto) return fotoProducto(i.producto, clase);
+    return imgHTML(['img/productos/' + slug(i.texto) + '.webp'], i.texto, clase);
+  }
+
+  const FLECHA = d => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  function htmlKit(k) {
+    const diapositivas = [
+      `<figure class="kit-slide">
+         <div class="kit-slide__foto">${fotoProducto(k, 'kit-slide__img')}</div>
+         <figcaption class="kit-slide__pie"><strong>${esc(k.nombre)}</strong><span>${precio(k.precio)}</span></figcaption>
+       </figure>`,
+      ...k.items.map(i => `<figure class="kit-slide">
+         <div class="kit-slide__foto">${fotoItem(i, 'kit-slide__img')}</div>
+         <figcaption class="kit-slide__pie">
+           ${i.producto && marcaVisible(i.producto.marca) ? `<em>${esc(i.producto.marca)}</em>` : ''}
+           <strong>${i.cantidad > 1 ? i.cantidad + ' x ' : ''}${esc(nombreItem(i))}</strong>
+           ${i.producto && i.producto.descripcion ? `<span>${esc(i.producto.descripcion)}</span>` : ''}
+         </figcaption>
+       </figure>`)
+    ];
+    const ahorro = k.precioSeparado > k.precio
+      ? `<p class="kit__ahorro">Por separado: <s>${precio(k.precioSeparado)}</s> · <strong>Ahorrás ${precio(k.precioSeparado - k.precio)}</strong></p>` : '';
+    return `<div class="kit__caja" role="dialog" aria-modal="true" aria-labelledby="kit-titulo">
+      <button type="button" class="kit__cerrar" data-kit-cerrar aria-label="Cerrar">${FLECHA('M6 6l12 12M18 6L6 18')}</button>
+      <div class="kit__carrusel">
+        <div class="kit__pista" id="kit-pista">${diapositivas.join('')}</div>
+        <button type="button" class="kit__flecha kit__flecha--izq" data-kit-mover="-1" aria-label="Anterior">${FLECHA('M15 5l-7 7 7 7')}</button>
+        <button type="button" class="kit__flecha kit__flecha--der" data-kit-mover="1" aria-label="Siguiente">${FLECHA('M9 5l7 7-7 7')}</button>
+        <div class="kit__puntos">${diapositivas.map((_, n) =>
+          `<button type="button" class="kit__punto" data-kit-ir="${n}" aria-label="Foto ${n + 1}"></button>`).join('')}</div>
+      </div>
+      <div class="kit__info">
+        ${marcaVisible(k.marca) ? `<span class="tarjeta__marca">${esc(k.marca)}</span>` : ''}
+        <h2 id="kit-titulo" class="kit__titulo">${esc(k.nombre)}</h2>
+        ${estadoHTML(k)}
+        ${k.descripcion ? `<p class="kit__desc">${esc(k.descripcion)}</p>` : ''}
+        <h3 class="kit__subtitulo">Incluye</h3>
+        <ul class="kit__lista">${k.items.map((i, n) => `<li>
+          <button type="button" data-kit-ir="${n + 1}">
+            <span class="kit__mini">${fotoItem(i, 'kit__mini-img')}</span>
+            <span>${i.cantidad} x ${esc(nombreItem(i))}</span>
+          </button></li>`).join('')}</ul>
+        ${ahorro}
+        <div class="kit__pie">${precioHTML(k)}${botonHTML(k, 'Agregar al carrito')}</div>
+      </div>
+    </div>`;
+  }
+
+  let kitAbierto = null;
+
+  function irDiapositiva(n) {
+    const pista = document.getElementById('kit-pista');
+    if (!pista) return;
+    const total = pista.children.length;
+    n = (n + total) % total;
+    pista.scrollTo({ left: pista.children[n].offsetLeft - pista.offsetLeft, behavior: 'smooth' });
+  }
+
+  function marcarPunto() {
+    const pista = document.getElementById('kit-pista');
+    if (!pista || !kitAbierto) return;
+    const n = Math.round(pista.scrollLeft / Math.max(1, pista.clientWidth));
+    kitAbierto.querySelectorAll('.kit__punto').forEach((b, i) => b.classList.toggle('activo', i === n));
+    kitAbierto.dataset.actual = n;
+  }
+
+  function cambiarURLKit(codigo) {
+    try {
+      const u = new URL(location.href);
+      if (codigo) u.searchParams.set('kit', codigo); else u.searchParams.delete('kit');
+      history.replaceState(null, '', u);
+    } catch (e) { /* sin historial */ }
+  }
+
+  function abrirKit(codigo) {
+    cargarDatos().then(({ productos }) => {
+      const k = productos.find(p => p.codigo === codigo);
+      if (!k || !esKit(k)) return;
+      cerrarKit();
+      kitAbierto = document.createElement('div');
+      kitAbierto.className = 'kit';
+      kitAbierto.innerHTML = htmlKit(k);
+      document.body.appendChild(kitAbierto);
+      document.body.classList.add('sin-scroll');
+      document.getElementById('kit-pista').addEventListener('scroll', () => requestAnimationFrame(marcarPunto), { passive: true });
+      marcarPunto();
+      kitAbierto.querySelector('.kit__cerrar').focus();
+      cambiarURLKit(codigo);
+    });
+  }
+
+  function cerrarKit() {
+    if (!kitAbierto) return;
+    kitAbierto.remove();
+    kitAbierto = null;
+    document.body.classList.remove('sin-scroll');
+    cambiarURLKit('');
+  }
+
+  document.addEventListener('click', e => {
+    if (kitAbierto) {
+      if (e.target === kitAbierto || e.target.closest('[data-kit-cerrar]')) return cerrarKit();
+      const mover = e.target.closest('[data-kit-mover]');
+      if (mover) return irDiapositiva(Number(kitAbierto.dataset.actual || 0) + Number(mover.dataset.kitMover));
+      const ir = e.target.closest('[data-kit-ir]');
+      if (ir) return irDiapositiva(Number(ir.dataset.kitIr));
+      return;
+    }
+    const t = e.target.closest('[data-kit]');
+    if (t && !e.target.closest('[data-agregar], a')) abrirKit(t.dataset.kit);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (kitAbierto) {
+      if (e.key === 'Escape') cerrarKit();
+      if (e.key === 'ArrowRight') irDiapositiva(Number(kitAbierto.dataset.actual || 0) + 1);
+      if (e.key === 'ArrowLeft') irDiapositiva(Number(kitAbierto.dataset.actual || 0) - 1);
+      return;
+    }
+    const t = e.target.closest && e.target.closest('[data-kit]');
+    if (t && (e.key === 'Enter' || e.key === ' ') && !e.target.closest('[data-agregar], a')) {
+      e.preventDefault();
+      abrirKit(t.dataset.kit);
+    }
+  });
+
   /* ---------------- BANNER ---------------- */
 
   function pintarBanner(archivo, alt) {
@@ -414,6 +589,8 @@ const SV = (() => {
     pintarEncabezado(pagina);
     pintarPie();
     window.addEventListener('storage', e => { if (e.key === CLAVE_CARRITO) actualizarContador(); });
+    // Link directo a un combo: catalogo.html?kit=CODIGO
+    if (param('kit')) abrirKit(param('kit'));
   }
 
   return {
@@ -422,7 +599,7 @@ const SV = (() => {
     siguienteImg, fotoProducto, logoMarca,
     leerCarrito, agregar, cambiarCantidad, quitar, vaciar, totalUnidades,
     linkWhatsApp, aviso,
-    tarjetaHTML, estadoHTML, textoDescripcion,
+    tarjetaHTML, estadoHTML, textoDescripcion, esKit, nombreItem, abrirKit,
     pintarBanner, cargandoHTML, errorHTML,
     iniciar
   };

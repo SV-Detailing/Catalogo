@@ -100,6 +100,7 @@
     ls.forEach(({ p, cantidad, subtotal }) => {
       const marca = SV.marcaVisible(p.marca) ? p.marca + ' ' : '';
       txt += `• ${cantidad} x ${marca}${p.nombre}${p.presentacion ? ' ' + p.presentacion : ''} (${p.codigo}) — ${SV.precio(subtotal)}\n`;
+      if (SV.esKit(p)) p.items.forEach(i => { txt += `    - ${i.cantidad * cantidad} x ${SV.nombreItem(i)}\n`; });
     });
     txt += `\n*Total: ${SV.precio(total)}*\n`;
     if (nombre) txt += `\nNombre: ${nombre}`;
