@@ -391,7 +391,12 @@ const SV = (() => {
 
   const etiquetaMarcaHTML = p => {
     const e = CONFIG.ETIQUETA_MARCAS;
-    if (!e || !e.imagen || !(e.marcas || []).some(m => m.toUpperCase() === String(p.marca || '').toUpperCase())) return '';
+    if (!e || !e.imagen) return '';
+    const porMarca = (e.marcas || []).some(m => m.toUpperCase() === String(p.marca || '').toUpperCase());
+    const nombre = String(p.nombre || '').toLowerCase();
+    const tiene = lista => (lista || []).some(w => nombre.includes(w.toLowerCase()));
+    const porMaquina = p.seccion === 'HERRAMIENTA' && tiene(e.palabras) && !tiene(e.excluir);
+    if (!porMarca && !porMaquina) return '';
     return `<img class="tarjeta__etiqueta" src="${esc(e.imagen)}" alt="${esc(e.texto || '')}" title="${esc(e.texto || '')}" loading="lazy">`;
   };
   const esKit = p => p.items && p.items.length > 0;

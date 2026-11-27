@@ -59,11 +59,16 @@ const CONFIG = {
   // Marcas que NO se muestran en filtros ni en la página Marcas
   MARCAS_OCULTAS: ['GENERICO'],
 
-  // Etiqueta que se muestra sobre la foto de todos los productos de esas marcas.
-  // Para sacarla, borrá la marca de la lista (o dejá la lista vacía: []).
+  // Etiqueta que se muestra sobre la foto de los productos de esas marcas y de las máquinas.
+  // Para sacarla, dejá las listas vacías: marcas: [] y palabras: [].
   ETIQUETA_MARCAS: {
     imagen: 'img/etiquetas/5off-efectivo.webp',
     texto: '5% OFF en efectivo',
-    marcas: ['3D', 'VONIXX', 'MENZERNA']
+    marcas: ['3D', 'VONIXX', 'MENZERNA'],
+    // También la llevan las máquinas: cualquier herramienta cuyo nombre tenga alguna de estas palabras
+    palabras: ['pulidora', 'politriz', 'lijadora', 'hidrolavadora', 'aspiradora', 'compresor',
+               'taladro', 'pistola de calor', 'inflador', 'máquina'],
+    // ...salvo que el nombre tenga alguna de estas (accesorios, no máquinas)
+    excluir: ['acople', 'picos', 'adaptador', 'pistola para', 'pistola corta']
   }
 };

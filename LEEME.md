@@ -52,4 +52,5 @@ Abrí `index.html` con la extensión **Live Server** de VS Code (clic derecho �
 ## Etiqueta por marca (ej: 5% OFF en efectivo)
 
 - Se configura en `js/config.js`, en `ETIQUETA_MARCAS`. Ahí están la imagen y la lista de marcas que la muestran sobre la foto.
-- Para sacarla, dejá la lista vacía: `marcas: []`. Para cambiarla, reemplazá la imagen en `img/etiquetas/`.
+- También la llevan las herramientas cuyo nombre tiene alguna palabra de `palabras` (pulidora, hidrolavadora, aspiradora, etc.).
+- Para sacarla, dejá las listas vacías: `marcas: []` y `palabras: []`. Para cambiarla, reemplazá la imagen en `img/etiquetas/`.
