@@ -95,7 +95,7 @@ const SV = (() => {
   /* Kits y combos: la columna INCLUYE lista lo que trae, separado por ";".
      Cada parte es un código del catálogo (ej: TS 6792031 DF) o un texto libre
      (ej: Aplicador de Espuma Alta Densidad). Se puede indicar cantidad: 2x CODIGO */
-  const claveCodigo = c => String(c || '').replace(/\s+/g, '').toUpperCase();
+  const claveCodigo = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const PESO_ESTADO = { 'DISPONIBLE': 0, 'ÚLTIMAS UNIDADES': 1, 'SIN STOCK': 2 };
 
   function armarKits(productos) {
