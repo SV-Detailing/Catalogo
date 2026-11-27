@@ -249,6 +249,11 @@ button { cursor: pointer; }
   padding: 2px 8px; border-radius: 4px;
 }
 .tarjeta--agotada .tarjeta__foto { opacity: .55; }
+.tarjeta__etiqueta {
+  position: absolute; left: 6px; bottom: 4px; z-index: 2; width: 58%; max-width: 150px; height: auto;
+  pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .3));
+}
+.tarjeta--mini .tarjeta__etiqueta { width: 90%; }
 
 /* Foto a la izquierda (catálogo) */
 .tarjeta--h { flex-direction: row; gap: 10px; padding: 14px 14px 14px 8px; min-height: 230px; }

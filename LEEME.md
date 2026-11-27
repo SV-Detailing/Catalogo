@@ -48,3 +48,8 @@ Abrí `index.html` con la extensión **Live Server** de VS Code (clic derecho �
   - Algo que no está en el catálogo se escribe como texto, por ejemplo `Aplicador de Espuma Alta Densidad`. Su foto se busca como `img/productos/aplicador-de-espuma-alta-densidad.webp`.
 - El stock del kit sale de sus productos: si alguno está SIN STOCK, el kit también.
 - Link directo a un combo: `catalogo.html?kit=CODIGO`.
+
+## Etiqueta por marca (ej: 5% OFF en efectivo)
+
+- Se configura en `js/config.js`, en `ETIQUETA_MARCAS`. Ahí están la imagen y la lista de marcas que la muestran sobre la foto.
+- Para sacarla, dejá la lista vacía: `marcas: []`. Para cambiarla, reemplazá la imagen en `img/etiquetas/`.

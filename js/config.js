@@ -57,5 +57,13 @@ const CONFIG = {
   ],
 
   // Marcas que NO se muestran en filtros ni en la página Marcas
-  MARCAS_OCULTAS: ['GENERICO']
+  MARCAS_OCULTAS: ['GENERICO'],
+
+  // Etiqueta que se muestra sobre la foto de todos los productos de esas marcas.
+  // Para sacarla, borrá la marca de la lista (o dejá la lista vacía: []).
+  ETIQUETA_MARCAS: {
+    imagen: 'img/etiquetas/5off-efectivo.webp',
+    texto: '5% OFF en efectivo',
+    marcas: ['3D', 'VONIXX', 'MENZERNA']
+  }
 };

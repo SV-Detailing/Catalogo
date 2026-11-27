@@ -389,6 +389,11 @@ const SV = (() => {
     </button>`;
   }
 
+  const etiquetaMarcaHTML = p => {
+    const e = CONFIG.ETIQUETA_MARCAS;
+    if (!e || !e.imagen || !(e.marcas || []).some(m => m.toUpperCase() === String(p.marca || '').toUpperCase())) return '';
+    return `<img class="tarjeta__etiqueta" src="${esc(e.imagen)}" alt="${esc(e.texto || '')}" title="${esc(e.texto || '')}" loading="lazy">`;
+  };
   const esKit = p => p.items && p.items.length > 0;
   const unidadesKit = p => p.items.reduce((s, i) => s + i.cantidad, 0);
   const textoDescripcion = p => esKit(p)
@@ -403,7 +408,7 @@ const SV = (() => {
     const atributosKit = kit
       ? ` data-kit="${esc(p.codigo)}" tabindex="0" role="button" aria-label="Ver detalle de ${esc(p.nombre)}"` : '';
     return `<article class="tarjeta tarjeta--${variante} ${p.estado === 'SIN STOCK' ? 'tarjeta--agotada' : ''} ${kit ? 'tarjeta--kit' : ''}"${atributosKit}>
-      <div class="tarjeta__media">${etiquetaPromo}${fotoProducto(p)}${kit ? '<span class="tarjeta__ver">Ver combo</span>' : ''}</div>
+      <div class="tarjeta__media">${etiquetaPromo}${etiquetaMarcaHTML(p)}${fotoProducto(p)}${kit ? '<span class="tarjeta__ver">Ver combo</span>' : ''}</div>
       <div class="tarjeta__info">
         ${marcaVisible(p.marca) ? `<span class="tarjeta__marca">${esc(p.marca)}</span>` : ''}
         <h3 class="tarjeta__nombre">${esc(p.nombre)}</h3>
